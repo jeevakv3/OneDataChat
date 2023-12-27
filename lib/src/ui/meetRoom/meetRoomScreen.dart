@@ -245,7 +245,7 @@ class _MeetRoomState extends State<MeetRoom> {
         child: AgoraVideoView(
           controller: VideoViewController.remote(
             rtcEngine: _engine,
-            canvas: VideoCanvas(uid: 1),
+            canvas: VideoCanvas(uid: _remoteUid!),
             connection: RtcConnection(channelId: 'Jeeva'),
           ),
         ),

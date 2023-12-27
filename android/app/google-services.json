@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "787784782706",
+    "project_id": "onedatachat",
+    "storage_bucket": "onedatachat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:787784782706:android:b6a591bd806af7111c03eb",
+        "android_client_info": {
+          "package_name": "com.example.onedatachat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABH3lGihDGGwoJQfdKQiZIK32gzUSMm1w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

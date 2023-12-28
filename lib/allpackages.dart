@@ -12,6 +12,7 @@ export 'package:firebase_storage/firebase_storage.dart';
 export 'package:permission_handler/permission_handler.dart';
 export 'package:agora_rtc_engine/agora_rtc_engine.dart'
     hide FrameRate, UserInfo;
+export 'package:video_player/video_player.dart' hide VideoFormat;
 export 'src/src.dart';
 
 //Icons

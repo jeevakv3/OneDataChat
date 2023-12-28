@@ -6,7 +6,7 @@ class ChatController extends GetxController {
   RxList<ChatModel> chatData = <ChatModel>[].obs;
   Query<ChatModel>? chatRef;
   Future<void> sendMessage(
-      String content, String userId, String imageUrl) async {
+      String content, String userId, String imageUrl, String videoUrl) async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       String gropId = userId;
@@ -15,6 +15,7 @@ class ChatController extends GetxController {
         'IdTo': userId,
         'content': content,
         'imageUrl': imageUrl != null ? imageUrl : '',
+        'videoUrl': videoUrl,
         'timestamp': DateTime.now().millisecondsSinceEpoch,
         'left': 0,
       });

@@ -81,7 +81,7 @@ class _MeetRoomState extends State<MeetRoom> {
 
     await _engine.joinChannel(
       token:
-          '007eJxTYHh8SmbRnrNPHVn/yPy3c45SNbzRJzbNZf6xe1v3PptYW79TgSE5KdUoKdXQ3DQtJcnE3MgsKdEwzcwgOSUt2czIxCDFPGZxd2pDICPD194DrIwMEAjiszJ4paaWJTIwAABIqCMj',
+          '007eJxTYNA/Z9szuyOjYifHfRMlTcOi8BWiEkuc2W+1vsz/qrtu22MFhuSkVKOkVENz07SUJBNzI7OkRMM0M4PklLRkMyMTgxTzVdq9qQ2BjAx7vJKYGBkgEMRnZfBKTS1LZGAAADQCH0U=',
       channelId: 'Jeeva',
       uid: 0,
       options: const ChannelMediaOptions(),

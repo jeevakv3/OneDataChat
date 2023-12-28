@@ -1,6 +1,5 @@
 import '../../../allpackages.dart';
 import '../../model/chatModel.dart';
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 
 class ChatScreen extends StatefulWidget {
   UserModel userData;
@@ -12,18 +11,15 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final controller = Get.put(ChatController());
+  late VideoPlayerController videoPlayerController;
+  late Future<void> initilizeVideoPlayerFuture;
+
   File? imageuser;
+  File? videoFile;
   String imageUrl = '';
+  String videoDownLoad = '';
 
   TextEditingController chatController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    // initializeAgora();
-
-    /// controller.getMessageData(widget.userData.uid);
-  }
 
   Future<void> imagePick() async {
     final picker = ImagePicker();
@@ -33,16 +29,40 @@ class _ChatScreenState extends State<ChatScreen> {
       maxHeight: 400,
       maxWidth: 400,
     );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: ColorConstant.redColor,
+        content: const Text('Please wait few seconds Image is Loading'),
+      ),
+    );
     imageuser = File(result!.path);
     if (imageuser != null) {
-      var timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final Reference storageRef =
-          FirebaseStorage.instance.ref().child('$timestamp.jpg');
-      final taskSnapshot = await storageRef.putFile(imageuser!);
-      imageUrl = await taskSnapshot.ref.getDownloadURL();
-      print('image Url---$imageUrl');
+      Get.to(MediaFileSend(
+        imageOrVideo: imageuser!,
+        isVideo: false,
+        userId: widget.userData.uid,
+      ));
     }
     setState(() {});
+  }
+
+  Future<void> pickVideo() async {
+    final picker = ImagePicker();
+    final pickerFile = await picker.pickVideo(source: ImageSource.gallery);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: ColorConstant.redColor,
+        content: const Text('Please wait few seconds Video is Loading'),
+      ),
+    );
+    videoFile = File(pickerFile!.path);
+    if (videoFile != null) {
+      Get.to(MediaFileSend(
+        imageOrVideo: videoFile!,
+        isVideo: true,
+        userId: widget.userData.uid,
+      ));
+    }
   }
 
   final TextEditingController roomController = TextEditingController();
@@ -77,8 +97,8 @@ class _ChatScreenState extends State<ChatScreen> {
                               profileUrl: widget.userData.profile,
                               displayName: widget.userData.displayName)),
                     );
-                    await controller.sendMessage(
-                        'Please Join The call', widget.userData.uid, imageUrl);
+                    await controller.sendMessage('Please Join The call',
+                        widget.userData.uid, imageUrl, videoDownLoad);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -217,14 +237,14 @@ class _ChatScreenState extends State<ChatScreen> {
                                     print(
                                         'length --${snapshot.data!.docs.length}');
                                     return BubbleChat(
-                                      left: messages[index].idFrom ==
-                                              FirebaseAuth
-                                                  .instance.currentUser!.uid
-                                          ? 0
-                                          : 1,
-                                      imageUrl: messages[index].imageUrl,
-                                      content: messages[index].content,
-                                    );
+                                        left: messages[index].idFrom ==
+                                                FirebaseAuth
+                                                    .instance.currentUser!.uid
+                                            ? 0
+                                            : 1,
+                                        imageUrl: messages[index].imageUrl,
+                                        content: messages[index].content,
+                                        videoUrl: messages[index].videoUrl);
                                   }),
                             ),
                             // const Spacer(),
@@ -239,20 +259,22 @@ class _ChatScreenState extends State<ChatScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    imageuser != null
-                                        ? Image.file(
-                                            imageuser as File,
-                                            height: 100,
-                                            width: 150,
-                                          )
-                                        : IconButton(
-                                            onPressed: () async {
-                                              await imagePick();
-                                            },
-                                            icon: Icon(
-                                              Icons.camera,
-                                              color: ColorConstant.purple,
-                                            )),
+                                    IconButton(
+                                        onPressed: () async {
+                                          await imagePick();
+                                        },
+                                        icon: Icon(
+                                          Icons.camera,
+                                          color: ColorConstant.purple,
+                                        )),
+                                    IconButton(
+                                        onPressed: () async {
+                                          await pickVideo();
+                                        },
+                                        icon: Icon(
+                                          Icons.video_file,
+                                          color: ColorConstant.purple,
+                                        )),
                                     Expanded(
                                         child: TextField(
                                       controller: chatController,
@@ -264,13 +286,28 @@ class _ChatScreenState extends State<ChatScreen> {
                                     )),
                                     IconButton(
                                         onPressed: () async {
-                                          await controller.sendMessage(
-                                              chatController.text,
-                                              widget.userData.uid,
-                                              imageUrl);
-                                          chatController.clear();
-                                          imageuser = null;
-                                          imageUrl = '';
+                                          if (imageUrl == '' &&
+                                              videoDownLoad == '') {
+                                            await controller.sendMessage(
+                                                chatController.text,
+                                                widget.userData.uid,
+                                                imageUrl,
+                                                videoDownLoad);
+                                            chatController.clear();
+                                            imageuser = null;
+                                            imageUrl = '';
+                                            videoDownLoad = '';
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                backgroundColor:
+                                                    ColorConstant.redColor,
+                                                content:
+                                                    const Text('Please wait '),
+                                              ),
+                                            );
+                                          }
                                         },
                                         icon: Icon(
                                           Icons.send,
@@ -298,14 +335,38 @@ class BubbleChat extends StatefulWidget {
   int left;
   String content;
   String imageUrl;
+  String videoUrl;
   BubbleChat(
-      {required this.left, required this.content, required this.imageUrl});
+      {required this.left,
+      required this.content,
+      required this.imageUrl,
+      required this.videoUrl});
 
   @override
   State<BubbleChat> createState() => _BubbleChatState();
 }
 
 class _BubbleChatState extends State<BubbleChat> {
+  late VideoPlayerController videoPlayerController;
+  late Future<void> initilizeVideoPlayerFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.videoUrl != '') {
+      videoPlayerController = VideoPlayerController.network(widget.videoUrl);
+      initilizeVideoPlayerFuture = videoPlayerController.initialize();
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (widget.videoUrl != '') {
+      videoPlayerController.dispose();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -335,16 +396,17 @@ class _BubbleChatState extends State<BubbleChat> {
                           : const Radius.circular(25.0),
                     ),
                     color: widget.left == 0
-                        ? widget.imageUrl != ''
+                        ? widget.imageUrl != '' || widget.videoUrl != ''
                             ? ColorConstant.whiteColor
                             : ColorConstant.blueColor
-                        : widget.imageUrl != ''
+                        : widget.imageUrl != '' || widget.videoUrl != ''
                             ? ColorConstant.whiteColor
                             : Colors.grey[300],
                   ),
                   padding: const EdgeInsets.all(15),
                   constraints: BoxConstraints(maxWidth: 330),
-                  child: widget.imageUrl != null && widget.imageUrl != ''
+                  child: (widget.imageUrl != null && widget.imageUrl != '') ||
+                          (widget.videoUrl != '')
                       ? Column(
                           children: [
                             widget.content != null
@@ -367,6 +429,36 @@ class _BubbleChatState extends State<BubbleChat> {
                                                 NetworkImage(widget.imageUrl))),
                                   )
                                 : Container(),
+                            widget.videoUrl != null && widget.videoUrl != ''
+                                ? Container(
+                                    alignment: widget.left == 0
+                                        ? Alignment.centerRight
+                                        : Alignment.centerLeft,
+                                    child: FutureBuilder(
+                                        future: initilizeVideoPlayerFuture,
+                                        builder:
+                                            (context, AsyncSnapshot snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.done) {
+                                            return Container(
+                                              height: 100,
+                                              width: 150,
+                                              alignment: widget.left == 0
+                                                  ? Alignment.centerRight
+                                                  : Alignment.centerLeft,
+                                              color: Colors.white,
+                                              child: VideoPlayer(
+                                                  videoPlayerController),
+                                            );
+                                          } else {
+                                            return const Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            );
+                                          }
+                                        }),
+                                  )
+                                : Container()
                           ],
                         )
                       : CommonText(

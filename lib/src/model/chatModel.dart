@@ -5,17 +5,18 @@ class ChatModel {
   final String idTo;
   final String content;
   String imageUrl;
+  String videoUrl;
   final int timestamp;
   final int left;
 
-  ChatModel({
-    required this.idFrom,
-    required this.idTo,
-    required this.content,
-    required this.timestamp,
-    required this.left,
-    required this.imageUrl,
-  });
+  ChatModel(
+      {required this.idFrom,
+      required this.idTo,
+      required this.content,
+      required this.timestamp,
+      required this.left,
+      required this.imageUrl,
+      required this.videoUrl});
 
   Map<String, dynamic> toMap() {
     return {
@@ -25,17 +26,18 @@ class ChatModel {
       'timestamp': timestamp,
       'left': left,
       'imageUrl': imageUrl,
+      'videoUrl': videoUrl
     };
   }
 
   factory ChatModel.fromMap(Map<String, dynamic> map) {
     return ChatModel(
-      idFrom: map['idFrom'],
-      idTo: map['IdTo'],
-      content: map['content'],
-      timestamp: map['timestamp'],
-      left: map['left'],
-      imageUrl: map['imageUrl'],
-    );
+        idFrom: map['idFrom'],
+        idTo: map['IdTo'],
+        content: map['content'],
+        timestamp: map['timestamp'],
+        left: map['left'],
+        imageUrl: map['imageUrl'],
+        videoUrl: map['videoUrl']);
   }
 }
